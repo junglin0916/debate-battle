@@ -101,46 +101,51 @@
       color: #ec4899; font-size: 10px; text-align: center; font-weight: bold; padding: 2px 0;
     }
 
-    /* Modal Overlay & Leaderboard Table */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(12, 15, 29, 0.95);
       display: flex; justify-content: center; align-items: center; z-index: 100;
     }
     .form-box { background: #151c2e; border: 2px solid #ec4899; border-radius: 12px; padding: 24px; text-align: center; width: 90%; max-width: 550px; }
-    .form-box h2 { color: #ec4899; font-size: 24px; margin-bottom: 10px; }
-    .form-group { display: flex; flex-direction: column; gap: 8px; margin: 14px 0; }
+    .form-box h2 { color: #ec4899; font-size: 24px; margin-bottom: 8px; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
     .input-field { padding: 10px; font-size: 15px; border: 1px solid #475569; background: #0c0f1d; color: #fff; border-radius: 8px; text-align: center; }
     
-    /* Leaderboard Table Styles */
     #leaderboard-box {
-      width: 100%; margin: 12px 0; background: #0c0f1d; border: 1px solid #2e3b5e; border-radius: 8px; max-height: 220px; overflow-y: auto;
+      width: 100%; margin: 10px 0; background: #0c0f1d; border: 1px solid #2e3b5e; border-radius: 8px; max-height: 180px; overflow-y: auto;
     }
     table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: center; }
     th { background: #1e293b; color: #ec4899; padding: 8px; border-bottom: 1px solid #2e3b5e; position: sticky; top: 0; }
-    td { padding: 8px; border-bottom: 1px solid #1e293b; color: #e2e8f0; }
+    td { padding: 6px; border-bottom: 1px solid #1e293b; color: #e2e8f0; }
 
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
+<!-- Initial Registration & Leaderboard Overlay -->
 <div id="registration-modal" class="modal-overlay">
   <div class="form-box">
     <h2>💖 CHANGE THE BULLY WITH LOVE!</h2>
-    <p style="font-size:14px; color:#94a3b8;">Enter player names to start the 1.5-minute Socratic Debate:</p>
+    <p style="font-size:13px; color:#94a3b8;">Enter player names to start the 2-minute Socratic Debate:</p>
+    
     <div class="form-group">
       <input type="text" id="p1-input-name" class="input-field" placeholder="Player 1 Name" required>
       <input type="text" id="p2-input-name" class="input-field" placeholder="Player 2 Name" required>
       <input type="text" id="class-input" class="input-field" placeholder="Class (e.g. 701)">
     </div>
-    <button class="btn btn-p1" style="width: 100%;" onclick="startBattleSession()">START MISSION</button>
+
+    <!-- Leaderboard View on Start -->
+    <h3 style="color:#38bdf8; font-size:15px; margin-top:8px;">🏆 Hall of Fame (Top Scores)</h3>
+    <div id="start-leaderboard-container"></div>
+
+    <button class="btn btn-p1" style="width: 100%; margin-top:12px;" onclick="startBattleSession()">START 2-MIN MISSION</button>
   </div>
 </div>
 
 <div id="app-container">
   <div id="arena-header">
     <div class="p1-color"><span id="p1-name-display">P1</span> Love: <span id="p1-score">0</span></div>
-    <div class="timer-badge">⏰ <span id="timer-val">01:30</span></div>
+    <div class="timer-badge">⏰ <span id="timer-val">02:00</span></div>
     <div class="p2-color"><span id="p2-name-display">P2</span> Love: <span id="p2-score">0</span></div>
   </div>
 
@@ -179,49 +184,71 @@
 
   const INAPPROPRIATE_WORDS = ["shut up", "stupid", "idiot", "die", "ugly", "hate", "fight", "kill", "dumb", "fool", "loser", "hate you"];
 
-  const SCENARIOS = [
+  // 5 Scenarios with Question Banks of Sentence Options
+  const QUESTION_BANK = [
     {
       prompt: "📢 Scenario 1: The bully cuts in front of lunch line!",
       promptZh: "情境一：霸凌者在午餐排隊時插隊！你該怎麼辦？",
       spokenIntro: "Scenario one. The bully cuts in line! Choose your response.",
-      options: [
-        { text: "Please don't cut in line.", points: 30, desc: "Super Polite (+30)" },
-        { text: "Please wait in line.", points: 25, desc: "Polite (+25)" },
-        { text: "Don't cut in line!", points: 20, desc: "Direct (+20)" }
+      pool: [
+        "Please don't cut in line.",
+        "Please wait in line.",
+        "Don't cut in line, please.",
+        "Please go to the back of the line.",
+        "Be polite and wait in line."
       ]
     },
     {
       prompt: "📢 Scenario 2: The bully looks lonely during lunchtime.",
       promptZh: "情境二：霸凌者在午餐時間看起來很孤單。",
       spokenIntro: "Scenario two. The bully looks lonely. Invite them!",
-      options: [
-        { text: "Let's eat lunch together!", points: 30, desc: "Friendly (+30)" },
-        { text: "Let's be friends!", points: 25, desc: "Warm (+25)" },
-        { text: "Let's eat bento!", points: 20, desc: "Basic (+20)" }
+      pool: [
+        "Let's eat lunch together!",
+        "Let's be friends!",
+        "Let's eat bento together!",
+        "Let me share my food with you!",
+        "Let's sit together at lunch!"
       ]
     },
     {
       prompt: "📢 Scenario 3: The bully drops trash in the hallway.",
       promptZh: "情境三：霸凌者在走廊亂丟垃圾。",
       spokenIntro: "Scenario three. The bully litters in the hallway.",
-      options: [
-        { text: "Please pick up the trash.", points: 30, desc: "Very Polite (+30)" },
-        { text: "Don't litter, please.", points: 25, desc: "Polite Warning (+25)" },
-        { text: "Clean it up, please.", points: 20, desc: "Direct (+20)" }
+      pool: [
+        "Please pick up the trash.",
+        "Don't litter, please.",
+        "Clean it up, please.",
+        "Please put the trash in the bin.",
+        "Keep our school clean, please."
       ]
     },
     {
       prompt: "📢 Scenario 4: The bully pushes classmates in PE class.",
       promptZh: "情境四：霸凌者在體育課時推同學。",
       spokenIntro: "Scenario four. The bully pushes classmates in PE class.",
-      options: [
-        { text: "Be careful, please!", points: 30, desc: "Caring Warning (+30)" },
-        { text: "Please don't push!", points: 25, desc: "Polite Stop (+25)" },
-        { text: "Don't push others!", points: 20, desc: "Direct Stop (+20)" }
+      pool: [
+        "Be careful, please!",
+        "Please don't push!",
+        "Don't push others, please!",
+        "Play safely, please!",
+        "Stop pushing and be careful!"
+      ]
+    },
+    {
+      prompt: "📢 Scenario 5: The bully plays smartphone games during class!",
+      promptZh: "情境五：霸凌者在上課時間偷玩手機遊戲！",
+      spokenIntro: "Scenario five. The bully plays games during class!",
+      pool: [
+        "Please turn off your phone.",
+        "Don't play games in class!",
+        "Listen to the teacher, please.",
+        "Put your phone away, please.",
+        "Pay attention in class, please."
       ]
     }
   ];
 
+  let activeScenarios = [];
   let p1Name = "Player 1", p2Name = "Player 2", className = "-";
   let activePlayer = 1;
   let p1Score = 0, p2Score = 0;
@@ -233,7 +260,8 @@
   let isMicActive = false;
   let hands = null;
 
-  let timeLeft = 90;
+  // 2 Minutes Timer (120 Seconds)
+  let timeLeft = 120;
   let gameTimerInterval = null;
 
   const chatBox = document.getElementById("chat-box");
@@ -242,6 +270,54 @@
   const sendBtn = document.getElementById("send-btn");
   const video = document.getElementById("webcam");
   const motionStatus = document.getElementById("motion-status");
+
+  function renderLeaderboardTable() {
+    let scores = JSON.parse(localStorage.getItem("debate_battle_scores") || "[]");
+    if (scores.length === 0) {
+      return `<p style="font-size:12px; color:#94a3b8; margin:8px 0;">No previous scores yet. Be the first!</p>`;
+    }
+    let rowsHtml = scores.slice(0, 5).map((s, idx) => `
+      <tr>
+        <td style="color:#f59e0b; font-weight:bold;">#${idx + 1}</td>
+        <td><b>${s.name}</b></td>
+        <td>${s.className}</td>
+        <td style="color:#ec4899; font-weight:bold;">⭐ ${s.score}</td>
+      </tr>
+    `).join("");
+
+    return `
+      <div id="leaderboard-box">
+        <table>
+          <thead>
+            <tr><th>Rank</th><th>Name</th><th>Class</th><th>Love Points</th></tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  // Generate randomized scenario pool with randomized scores
+  function buildRandomizedScenarios() {
+    activeScenarios = QUESTION_BANK.map(scen => {
+      // Pick 3 random distinct options from pool
+      let shuffled = [...scen.pool].sort(() => 0.5 - Math.random());
+      let selected = shuffled.slice(0, 3);
+      
+      // Assign randomized score (e.g., 25, 30, 35, 40)
+      let options = selected.map(text => {
+        let randomPoints = Math.floor(Math.random() * 4) * 5 + 25; // 25, 30, 35, 40
+        return { text: text, points: randomPoints, desc: `+${randomPoints} pts` };
+      });
+
+      return {
+        prompt: scen.prompt,
+        promptZh: scen.promptZh,
+        spokenIntro: scen.spokenIntro,
+        options: options
+      };
+    });
+  }
 
   function speakTutor(text) {
     if (!('speechSynthesis' in window)) return;
@@ -283,7 +359,7 @@
   }
 
   function updatePromptUI() {
-    const scenario = SCENARIOS[currentPromptIdx];
+    const scenario = activeScenarios[currentPromptIdx];
     document.getElementById("prompt-text").textContent = scenario.prompt;
     document.getElementById("prompt-zh").textContent = scenario.promptZh;
     
@@ -308,16 +384,17 @@
     document.getElementById("p2-name-display").textContent = p2Name;
     document.getElementById("registration-modal").classList.add("hidden");
 
+    buildRandomizedScenarios();
     appendTutorMsg(`👋 Welcome ${p1Name} and ${p2Name}! Speak polite English to change the bully!`);
     
     setTimeout(() => {
       updatePromptUI();
       initMediaPipeHands();
-      start15MinTimer();
+      start2MinTimer();
     }, 1200);
   }
 
-  function start15MinTimer() {
+  function start2MinTimer() {
     clearInterval(gameTimerInterval);
     gameTimerInterval = setInterval(() => {
       timeLeft--;
@@ -363,7 +440,7 @@
       return;
     }
 
-    const scenario = SCENARIOS[currentPromptIdx];
+    const scenario = activeScenarios[currentPromptIdx];
     let matchedOption = null;
 
     for (let opt of scenario.options) {
@@ -418,7 +495,7 @@
       document.getElementById("p2-score").textContent = p2Score;
     }
 
-    totalLoveMeter = Math.min(100, totalLoveMeter + 25);
+    totalLoveMeter = Math.min(100, totalLoveMeter + 20);
     document.getElementById("heart-fill").style.width = totalLoveMeter + "%";
 
     setTimeout(() => {
@@ -435,7 +512,7 @@
       }
 
       activePlayer = activePlayer === 1 ? 2 : 1;
-      currentPromptIdx = (currentPromptIdx + 1) % SCENARIOS.length;
+      currentPromptIdx = (currentPromptIdx + 1) % activeScenarios.length;
       updatePromptUI();
 
       const nextName = activePlayer === 1 ? p1Name : p2Name;
@@ -485,38 +562,12 @@
     }
   }
 
-  // Persistent Leaderboard Logic (Saves & Displays All Previous Runs)
-  function saveAndRenderLeaderboard() {
+  function saveAndRecordScores() {
     let scores = JSON.parse(localStorage.getItem("debate_battle_scores") || "[]");
-    
-    // Add current run
     scores.push({ name: p1Name, className: className, score: p1Score, date: new Date().toLocaleDateString() });
     scores.push({ name: p2Name, className: className, score: p2Score, date: new Date().toLocaleDateString() });
-    
-    // Sort highest score first
     scores.sort((a, b) => b.score - a.score);
     localStorage.setItem("debate_battle_scores", JSON.stringify(scores));
-
-    // Render HTML table rows for Top 10 previous runs
-    let rowsHtml = scores.slice(0, 10).map((s, idx) => `
-      <tr>
-        <td style="color:#f59e0b; font-weight:bold;">#${idx + 1}</td>
-        <td><b>${s.name}</b></td>
-        <td>${s.className}</td>
-        <td style="color:#ec4899; font-weight:bold;">⭐ ${s.score}</td>
-      </tr>
-    `).join("");
-
-    return `
-      <div id="leaderboard-box">
-        <table>
-          <thead>
-            <tr><th>Rank</th><th>Name</th><th>Class</th><th>Love Points</th></tr>
-          </thead>
-          <tbody>${rowsHtml}</tbody>
-        </table>
-      </div>
-    `;
   }
 
   function clearAllLeaderboardScores() {
@@ -537,9 +588,9 @@
     appendTutorMsg(`🎉 MISSION COMPLETE! ${winner.toUpperCase()} won the debate!`);
     speakTutor("Mission complete! The bully is now your friend!");
 
-    const tableHtml = saveAndRenderLeaderboard();
+    saveAndRecordScores();
+    const tableHtml = renderLeaderboardTable();
 
-    // Submit to Google Apps Script Endpoint
     const payloadP1 = { name: p1Name, className: className, seatNum: "P1", score: p1Score };
     const payloadP2 = { name: p2Name, className: className, seatNum: "P2", score: p2Score };
 
@@ -572,6 +623,9 @@
     `;
     document.body.appendChild(modal);
   }
+
+  // Load initial Leaderboard on startup modal
+  document.getElementById("start-leaderboard-container").innerHTML = renderLeaderboardTable();
 
   userInput.addEventListener("keydown", (e) => { if (e.key === "Enter") submitSpeech(); });
 </script>

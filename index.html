@@ -91,9 +91,10 @@
     .btn { padding: 12px 18px; font-size: 16px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s; }
     .btn-p1 { background: #0284c7; color: #fff; }
     .btn-p2 { background: #be123c; color: #fff; }
+    .btn-reset { background: #dc2626; color: #fff; padding: 6px 12px; font-size: 12px; border-radius: 4px; margin-top: 8px; }
     
     #cam-container { position: relative; width: 110px; height: 80px; border-radius: 6px; overflow: hidden; border: 2px solid #ec4899; background: #000; }
-    webcam { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    #webcam { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
     #gesture-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: scaleX(-1); }
     #motion-status {
       position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.8);
@@ -112,7 +113,7 @@
     
     /* Leaderboard Table Styles */
     #leaderboard-box {
-      width: 100%; margin: 12px 0; background: #0c0f1d; border: 1px solid #2e3b5e; border-radius: 8px; max-height: 200px; overflow-y: auto;
+      width: 100%; margin: 12px 0; background: #0c0f1d; border: 1px solid #2e3b5e; border-radius: 8px; max-height: 220px; overflow-y: auto;
     }
     table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: center; }
     th { background: #1e293b; color: #ec4899; padding: 8px; border-bottom: 1px solid #2e3b5e; position: sticky; top: 0; }
@@ -176,10 +177,8 @@
 <script>
   const LEADERBOARD_URL = "https://script.google.com/macros/s/AKfycbwnG3Mc1jpxrASeMr9FRjBS0a9r8bKOmMDPdzLFsn4UszeuMzAkJDu6yBHd68O4d6MAxw/exec";
 
-  // Inappropriate content detector (toxic / aggressive words)
   const INAPPROPRIATE_WORDS = ["shut up", "stupid", "idiot", "die", "ugly", "hate", "fight", "kill", "dumb", "fool", "loser", "hate you"];
 
-  // Multi-option Anti-Bullying Scenarios with Chinese translations and tiered scoring
   const SCENARIOS = [
     {
       prompt: "📢 Scenario 1: The bully cuts in front of lunch line!",
@@ -288,7 +287,6 @@
     document.getElementById("prompt-text").textContent = scenario.prompt;
     document.getElementById("prompt-zh").textContent = scenario.promptZh;
     
-    // Render option chips
     const optsBox = document.getElementById("options-container");
     optsBox.innerHTML = "";
     scenario.options.forEach(opt => {
@@ -356,7 +354,6 @@
     const currentName = activePlayer === 1 ? p1Name : p2Name;
     const lower = text.toLowerCase();
 
-    // 1. Content Moderation Check (Reject toxic / rude language)
     const isToxic = INAPPROPRIATE_WORDS.some(badWord => lower.includes(badWord));
     if (isToxic) {
       appendMsg(activePlayer, `${currentName}: "${text}"`);
@@ -366,13 +363,11 @@
       return;
     }
 
-    // 2. Evaluate against acceptable scenario options
     const scenario = SCENARIOS[currentPromptIdx];
     let matchedOption = null;
 
     for (let opt of scenario.options) {
       const optLower = opt.text.toLowerCase();
-      // Match if input includes core words of option or close match
       const keyWords = optLower.replace(/[^\w\s]/gi, '').split(' ');
       const matchCount = keyWords.filter(w => w.length > 2 && lower.includes(w)).length;
       if (matchCount >= 2 || lower.includes(optLower)) {
@@ -490,23 +485,25 @@
     }
   }
 
-  // Local Leaderboard Recording & Display
+  // Persistent Leaderboard Logic (Saves & Displays All Previous Runs)
   function saveAndRenderLeaderboard() {
-    let scores = JSON.parse(localStorage.getItem("debate_scores") || "[]");
-    scores.push({ name: p1Name, className: className, score: p1Score, time: new Date().toLocaleTimeString() });
-    scores.push({ name: p2Name, className: className, score: p2Score, time: new Date().toLocaleTimeString() });
+    let scores = JSON.parse(localStorage.getItem("debate_battle_scores") || "[]");
     
-    // Sort highest to lowest
+    // Add current run
+    scores.push({ name: p1Name, className: className, score: p1Score, date: new Date().toLocaleDateString() });
+    scores.push({ name: p2Name, className: className, score: p2Score, date: new Date().toLocaleDateString() });
+    
+    // Sort highest score first
     scores.sort((a, b) => b.score - a.score);
-    localStorage.setItem("debate_scores", JSON.stringify(scores));
+    localStorage.setItem("debate_battle_scores", JSON.stringify(scores));
 
-    // Render Table
-    let rowsHtml = scores.slice(0, 8).map((s, idx) => `
+    // Render HTML table rows for Top 10 previous runs
+    let rowsHtml = scores.slice(0, 10).map((s, idx) => `
       <tr>
-        <td>#${idx + 1}</td>
-        <td>${s.name}</td>
+        <td style="color:#f59e0b; font-weight:bold;">#${idx + 1}</td>
+        <td><b>${s.name}</b></td>
         <td>${s.className}</td>
-        <td>⭐ ${s.score}</td>
+        <td style="color:#ec4899; font-weight:bold;">⭐ ${s.score}</td>
       </tr>
     `).join("");
 
@@ -522,6 +519,13 @@
     `;
   }
 
+  function clearAllLeaderboardScores() {
+    if (confirm("Are you sure you want to clear all stored leaderboard scores?")) {
+      localStorage.removeItem("debate_battle_scores");
+      window.location.reload();
+    }
+  }
+
   async function finishBattle(reason) {
     clearInterval(gameTimerInterval);
     document.getElementById("control-panel").style.display = "none";
@@ -533,10 +537,9 @@
     appendTutorMsg(`🎉 MISSION COMPLETE! ${winner.toUpperCase()} won the debate!`);
     speakTutor("Mission complete! The bully is now your friend!");
 
-    // Save locally and build table
     const tableHtml = saveAndRenderLeaderboard();
 
-    // Transmit to Google Apps Script Endpoint
+    // Submit to Google Apps Script Endpoint
     const payloadP1 = { name: p1Name, className: className, seatNum: "P1", score: p1Score };
     const payloadP2 = { name: p2Name, className: className, seatNum: "P2", score: p2Score };
 
@@ -551,18 +554,20 @@
       });
     } catch(e) {}
 
-    // Display end-of-game overlay with Leaderboard Table
     const modal = document.createElement("div");
     modal.className = "modal-overlay";
     modal.innerHTML = `
       <div class="form-box">
         <h2>🏆 GAME OVER!</h2>
-        <p style="color:#ec4899; font-size:18px; font-weight:bold;">${reason}</p>
+        <p style="color:#ec4899; font-size:17px; font-weight:bold;">${reason}</p>
         <p>Winner: <b>${winner}</b></p>
         <br>
-        <h3 style="color:#38bdf8;">📊 Leaderboard</h3>
+        <h3 style="color:#38bdf8;">📊 Leaderboard (All Runs)</h3>
         ${tableHtml}
-        <button class="btn btn-p1" style="width:100%; margin-top:10px;" onclick="window.location.reload()">PLAY AGAIN</button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-p1" style="flex:1;" onclick="window.location.reload()">PLAY AGAIN</button>
+          <button class="btn-reset" onclick="clearAllLeaderboardScores()">CLEAR ALL SCORES</button>
+        </div>
       </div>
     `;
     document.body.appendChild(modal);

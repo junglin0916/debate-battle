@@ -3,129 +3,265 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2-Player English Debate & Gesture Battle</title>
+  <title>2-Player Debate: Change the Bully with Love!</title>
+  
+  <!-- MediaPipe Hands & Camera Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background: #0c0f1d; color: #e2e8f0; min-height: 100vh; padding: 12px; display: flex; flex-direction: column; align-items: center; }
 
     #app-container { width: 100%; max-width: 950px; display: flex; flex-direction: column; gap: 10px; }
 
-    /* Top Arena Stats */
+    /* Top Arena Header */
     #arena-header {
       background: #151c2e; border: 2px solid #2e3b5e; border-radius: 12px; padding: 12px 20px;
-      display: flex; justify-content: space-between; align-items: center; font-size: 20px; font-weight: bold;
+      display: flex; justify-content: space-between; align-items: center; font-size: 19px; font-weight: bold;
     }
     .p1-color { color: #38bdf8; }
     .p2-color { color: #f43f5e; }
-    .vs-badge { color: #f59e0b; font-size: 24px; }
+    .timer-badge { color: #f59e0b; font-size: 22px; font-weight: bold; }
 
-    /* Battle Visual Canvas Area */
+    /* Topic Prompt Banner */
+    #prompt-banner {
+      background: #1e293b; border: 2px solid #ec4899; border-radius: 10px; padding: 12px 18px;
+      text-align: center; font-size: 18px; color: #f8fafc; font-weight: 600; line-height: 1.4;
+      box-shadow: 0 4px 15px rgba(236,72,153,0.3);
+    }
+    #prompt-hint { font-size: 14px; color: #f59e0b; margin-top: 4px; font-weight: normal; }
+
+    /* Battle Visual Stage */
     #battle-stage {
-      position: relative; width: 100%; height: 260px; background: #070913; border: 2px solid #2e3b5e;
+      position: relative; width: 100%; height: 270px; background: #070913; border: 2px solid #2e3b5e;
       border-radius: 12px; overflow: hidden; display: flex; justify-content: space-between; align-items: center; padding: 0 40px;
     }
-    .fighter { width: 100px; height: 100px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 40px; transition: 0.3s; }
+    .fighter { width: 85px; height: 85px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 38px; z-index: 2; }
     #player1-sprite { background: #0284c7; box-shadow: 0 0 20px #38bdf8; }
     #player2-sprite { background: #be123c; box-shadow: 0 0 20px #f43f5e; }
     
-    /* Custom Monster Image */
+    /* Bully Monster & Heart Gauge */
+    #monster-container {
+      position: absolute; left: calc(50% - 65px); top: 35px; display: flex; flex-direction: column; align-items: center; z-index: 1;
+    }
     #monster-sprite {
-      width: 120px; height: 120px; object-fit: contain; position: absolute; left: calc(50% - 60px); top: 30px;
-      filter: drop-shadow(0 0 15px #f59e0b); display: none;
+      width: 130px; height: 130px; object-fit: contain; filter: drop-shadow(0 0 15px #ec4899);
+      transition: transform 0.2s, filter 0.2s;
+    }
+    #heart-gauge-bar {
+      width: 140px; height: 16px; background: #1e293b; border: 2px solid #ec4899; border-radius: 10px; overflow: hidden; margin-top: 6px;
+    }
+    #heart-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #ec4899, #f43f5e); transition: width 0.4s ease-in-out; }
+
+    /* Heart Flash Effect */
+    .heart-hit-effect {
+      animation: pulse-heart 0.4s ease-in-out;
+      filter: brightness(1.8) drop-shadow(0 0 30px #ec4899) !important;
+    }
+    @keyframes pulse-heart {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); }
     }
 
-    /* Bullet Animation */
-    .bullet {
-      position: absolute; width: 24px; height: 10px; border-radius: 5px; background: #f59e0b;
-      box-shadow: 0 0 12px #f59e0b; top: 180px; transition: left 0.5s linear;
+    /* Arrow of Love (💘) Animation */
+    .arrow-of-love {
+      position: absolute; font-size: 28px; top: 175px; transition: left 0.45s cubic-bezier(0.25, 1, 0.5, 1); z-index: 3;
     }
 
     /* Dialogue Log */
     #chat-box {
-      height: 200px; background: #151c2e; border: 2px solid #2e3b5e; border-radius: 12px;
-      padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+      height: 190px; background: #151c2e; border: 2px solid #2e3b5e; border-radius: 12px;
+      padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
     }
-    .msg { padding: 12px 16px; border-radius: 8px; font-size: 18px; max-width: 80%; line-height: 1.4; }
+    .msg { padding: 10px 14px; border-radius: 8px; font-size: 17px; max-width: 85%; line-height: 1.4; }
     .p1-msg { background: #0369a1; color: #fff; align-self: flex-start; }
     .p2-msg { background: #9f1239; color: #fff; align-self: flex-end; }
-    .sys-msg { background: #1e293b; color: #f59e0b; align-self: center; font-weight: bold; text-align: center; }
+    .sys-msg { background: #1e293b; color: #f59e0b; align-self: center; font-weight: bold; text-align: center; width: 92%; }
 
     /* Control Panel & Gesture Monitor */
     #control-panel {
-      background: #151c2e; border: 2px solid #2e3b5e; border-radius: 12px; padding: 14px;
-      display: flex; gap: 12px; align-items: center;
+      background: #151c2e; border: 2px solid #2e3b5e; border-radius: 12px; padding: 12px;
+      display: flex; gap: 10px; align-items: center;
     }
-    #user-input { flex: 1; padding: 12px 16px; font-size: 18px; border-radius: 8px; border: 2px solid #475569; background: #0c0f1d; color: #fff; }
-    .btn { padding: 12px 20px; font-size: 18px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s; }
+    #user-input { flex: 1; padding: 12px 16px; font-size: 18px; border-radius: 8px; border: 2px solid #475569; background: #0c0f1d; color: #fff; outline: none; }
+    #user-input:focus { border-color: #ec4899; }
+    
+    .btn { padding: 12px 18px; font-size: 17px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s; }
     .btn-p1 { background: #0284c7; color: #fff; }
     .btn-p2 { background: #be123c; color: #fff; }
     
-    /* Camera Canvas for Hand Wave Detection */
-    #cam-container { position: relative; width: 110px; height: 80px; border-radius: 6px; overflow: hidden; border: 2px solid #38bdf8; }
+    #cam-container { position: relative; width: 120px; height: 85px; border-radius: 6px; overflow: hidden; border: 2px solid #ec4899; background: #000; }
     #webcam { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-    #gesture-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+    #gesture-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: scaleX(-1); }
+    #motion-status {
+      position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.8);
+      color: #ec4899; font-size: 10px; text-align: center; font-weight: bold; padding: 2px 0;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(12, 15, 29, 0.95);
+      display: flex; justify-content: center; align-items: center; z-index: 100;
+    }
+    .form-box { background: #151c2e; border: 2px solid #ec4899; border-radius: 12px; padding: 28px; text-align: center; width: 90%; max-width: 500px; }
+    .form-box h2 { color: #ec4899; font-size: 26px; margin-bottom: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 10px; margin: 16px 0; }
+    .input-field { padding: 12px; font-size: 16px; border: 1px solid #475569; background: #0c0f1d; color: #fff; border-radius: 8px; text-align: center; }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
+<div id="registration-modal" class="modal-overlay">
+  <div class="form-box">
+    <h2>💖 CHANGE THE BULLY WITH LOVE!</h2>
+    <p>Use polite English words to change the bully into a friend (1.5 Min):</p>
+    <div class="form-group">
+      <input type="text" id="p1-input-name" class="input-field" placeholder="Player 1 Name" required>
+      <input type="text" id="p2-input-name" class="input-field" placeholder="Player 2 Name" required>
+      <input type="text" id="class-input" class="input-field" placeholder="Class (e.g. 701)">
+    </div>
+    <button class="btn btn-p1" style="width: 100%;" onclick="startBattleSession()">START MISSION</button>
+  </div>
+</div>
+
 <div id="app-container">
-  <!-- Arena Header -->
   <div id="arena-header">
-    <div class="p1-color">P1: <span id="p1-name">Player 1</span> (HP: <span id="p1-hp">100</span>)</div>
-    <div class="vs-badge">⚔️ DUET DEBATE ⚔️</div>
-    <div class="p2-color">P2: <span id="p2-name">Player 2</span> (HP: <span id="p2-hp">100</span>)</div>
+    <div class="p1-color"><span id="p1-name-display">P1</span> Love Points: <span id="p1-score">0</span></div>
+    <div class="timer-badge">⏰ <span id="timer-val">01:30</span></div>
+    <div class="p2-color"><span id="p2-name-display">P2</span> Love Points: <span id="p2-score">0</span></div>
   </div>
 
-  <!-- Stage View -->
+  <!-- Dynamic Anti-Bullying Scenario Prompt -->
+  <div id="prompt-banner">
+    <div id="prompt-text">Loading anti-bullying scenario...</div>
+    <div id="prompt-hint">Hint: Use polite English commands to reach the bully's heart!</div>
+  </div>
+
   <div id="battle-stage">
     <div id="player1-sprite" class="fighter">🧙‍♂️</div>
-    <!-- Custom Monster Image Integration -->
-    <img id="monster-sprite" src="https://api.iconify.design/emojione-v1:dragon.svg" alt="Monster">
+    
+    <div id="monster-container">
+      <img id="monster-sprite" src="https://raw.githubusercontent.com/junglin0916/debate-battle/main/bully_monster_idle.gif" alt="Bully Monster">
+      <div id="heart-gauge-bar"><div id="heart-fill"></div></div>
+    </div>
+
     <div id="player2-sprite" class="fighter">🥷</div>
   </div>
 
-  <!-- Chat / Speech History -->
   <div id="chat-box"></div>
 
-  <!-- Input Controls -->
   <div id="control-panel">
     <div id="cam-container">
       <video id="webcam" autoplay playsinline muted></video>
-      <canvas id="gesture-overlay"></canvas>
+      <canvas id="gesture-canvas"></canvas>
+      <div id="motion-status">AI CAM READY</div>
     </div>
-    <input type="text" id="user-input" placeholder="P1's turn to speak English..." autocomplete="off">
+    <input type="text" id="user-input" placeholder="Speak or type your answer..." autocomplete="off">
     <button id="mic-btn" class="btn btn-p1" onclick="toggleMic()">🎤 SPEAK</button>
-    <button class="btn btn-p1" onclick="submitSpeech()">SEND</button>
+    <button id="send-btn" class="btn btn-p1" onclick="submitSpeech()">SEND</button>
   </div>
 </div>
 
 <script>
-  // Leaderboard Setup URL
-  const LEADERBOARD_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
+  const LEADERBOARD_URL = "https://script.google.com/macros/s/AKfycbwnG3Mc1jpxrASeMr9FRjBS0a9r8bKOmMDPdzLFsn4UszeuMzAkJDu6yBHd68O4d6MAxw/exec";
 
-  let activePlayer = 1; // 1 or 2
-  let p1Hp = 100, p2Hp = 100;
+  // Anti-Bullying Scenarios for Grade 7 Unit 3
+  const SCENARIOS = [
+    {
+      prompt: "📢 Scenario 1: The school bully cuts in front of lunch line! Ask them politely not to do that.",
+      keywords: ["don't", "dont", "cut", "line", "please", "wait"],
+      hint: "Say: 'Please don't cut in line!' or 'Please wait in line.'"
+    },
+    {
+      prompt: "📢 Scenario 2: The bully looks lonely during lunchtime. Invite them friendly to eat together!",
+      keywords: ["let's", "lets", "eat", "lunch", "together", "bento"],
+      hint: "Say: 'Let's eat lunch together!' or 'Let's be friends!'"
+    },
+    {
+      prompt: "📢 Scenario 3: The bully drops trash in the hallway. Tell them kindly to pick it up.",
+      keywords: ["please", "pick", "trash", "clean", "don't", "dont", "litter"],
+      hint: "Say: 'Please pick up the trash!' or 'Don't litter, please!'"
+    },
+    {
+      prompt: "📢 Scenario 4: The bully is pushing classmates in PE class. Give them a caring warning!",
+      keywords: ["don't", "dont", "push", "careful", "be careful", "stop"],
+      hint: "Say: 'Don't push!' or 'Be careful, please!'"
+    }
+  ];
+
+  let p1Name = "Player 1", p2Name = "Player 2", className = "-";
+  let activePlayer = 1;
+  let p1Score = 0, p2Score = 0;
+  let totalLoveMeter = 0; // 0% to 100%
+  let currentPromptIdx = 0;
   let canShoot = false;
   let recognition = null;
+  let hands = null;
+
+  let timeLeft = 90;
+  let gameTimerInterval = null;
 
   const chatBox = document.getElementById("chat-box");
   const userInput = document.getElementById("user-input");
   const micBtn = document.getElementById("mic-btn");
+  const sendBtn = document.getElementById("send-btn");
   const video = document.getElementById("webcam");
+  const motionStatus = document.getElementById("motion-status");
 
-  // Web Speech Setup
   if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
     recognition.lang = 'en-US';
+
+    recognition.onstart = () => { micBtn.textContent = "🎙️ LISTENING..."; };
     recognition.onresult = (e) => {
       userInput.value = e.results[0][0].transcript;
       submitSpeech();
     };
+    recognition.onerror = recognition.onend = () => { micBtn.textContent = "🎤 SPEAK"; };
   }
 
   function toggleMic() {
     if (recognition) recognition.start();
+  }
+
+  function updatePromptUI() {
+    const scenario = SCENARIOS[currentPromptIdx];
+    document.getElementById("prompt-text").textContent = scenario.prompt;
+    document.getElementById("prompt-hint").textContent = "💡 " + scenario.hint;
+  }
+
+  function startBattleSession() {
+    p1Name = document.getElementById("p1-input-name").value.trim() || "Player 1";
+    p2Name = document.getElementById("p2-input-name").value.trim() || "Player 2";
+    className = document.getElementById("class-input").value.trim() || "-";
+
+    document.getElementById("p1-name-display").textContent = p1Name;
+    document.getElementById("p2-name-display").textContent = p2Name;
+    document.getElementById("registration-modal").classList.add("hidden");
+
+    updatePromptUI();
+    initMediaPipeHands();
+    start15MinTimer();
+
+    appendMsg(0, `💖 Mission Started! ${p1Name}, use polite English to respond to Scenario 1!`);
+  }
+
+  function start15MinTimer() {
+    clearInterval(gameTimerInterval);
+    gameTimerInterval = setInterval(() => {
+      timeLeft--;
+      let m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+      document.getElementById("timer-val").textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+      
+      if (timeLeft <= 0) {
+        clearInterval(gameTimerInterval);
+        finishBattle("TIME EXPIRED");
+      }
+    }, 1000);
   }
 
   function appendMsg(sender, text) {
@@ -138,91 +274,149 @@
 
   function submitSpeech() {
     const text = userInput.value.trim();
-    if (!text) return;
+    if (!text || timeLeft <= 0) return;
 
-    appendMsg(activePlayer, `P${activePlayer}: "${text}"`);
+    const currentName = activePlayer === 1 ? p1Name : p2Name;
+    appendMsg(activePlayer, `${currentName}: "${text}"`);
     userInput.value = "";
 
-    // Simple sentence validation for beginner Grade 7 Unit 3 English
-    if (text.length > 3) {
-      appendMsg(0, `🎯 Great Sentence! WAVE YOUR HAND AT THE CAMERA TO SHOOT! 👋`);
+    const lower = text.toLowerCase();
+    const scenario = SCENARIOS[currentPromptIdx];
+    
+    const isCorrect = scenario.keywords.some(kw => lower.includes(kw));
+
+    if (isCorrect || lower.length >= 7) {
+      appendMsg(0, `🎯 Heart Touching Words! 👍 SHOW A THUMBS UP TO SHOOT ARROW OF LOVE 💘!`);
       canShoot = true;
-      enableHandDetection();
+      motionStatus.textContent = "SHOW 👍 THUMBS UP";
+      motionStatus.style.color = "#ec4899";
     } else {
-      appendMsg(0, `⚠️ Too short! Say a complete sentence!`);
+      appendMsg(0, `⚠️ Try using kinder English words! ${scenario.hint}`);
     }
   }
 
-  function shootBullet() {
+  function shootArrowOfLove() {
     if (!canShoot) return;
     canShoot = false;
+    motionStatus.textContent = "💘 LOVE ARROW FIRED!";
+    motionStatus.style.color = "#22c55e";
 
-    const bullet = document.createElement("div");
-    bullet.className = "bullet";
+    const arrow = document.createElement("div");
+    arrow.className = "arrow-of-love";
+    arrow.textContent = "💘";
     const stage = document.getElementById("battle-stage");
-    
+    const monster = document.getElementById("monster-sprite");
+
     if (activePlayer === 1) {
-      bullet.style.left = "140px";
-      stage.appendChild(bullet);
-      setTimeout(() => { bullet.style.left = "calc(100% - 160px)"; }, 50);
-      p2Hp -= 20;
+      arrow.style.left = "130px";
+      stage.appendChild(arrow);
+      setTimeout(() => { arrow.style.left = "calc(50% - 20px)"; }, 40);
+      p1Score += 25;
+      document.getElementById("p1-score").textContent = p1Score;
     } else {
-      bullet.style.left = "calc(100% - 160px)";
-      stage.appendChild(bullet);
-      setTimeout(() => { bullet.style.left = "140px"; }, 50);
-      p1Hp -= 20;
+      arrow.style.left = "calc(100% - 150px)";
+      stage.appendChild(arrow);
+      setTimeout(() => { arrow.style.left = "calc(50% - 20px)"; }, 40);
+      p2Score += 25;
+      document.getElementById("p2-score").textContent = p2Score;
     }
 
+    // Fill Bully Heart Gauge
+    totalLoveMeter = Math.min(100, totalLoveMeter + 25);
+    document.getElementById("heart-fill").style.width = totalLoveMeter + "%";
+
     setTimeout(() => {
-      bullet.remove();
-      document.getElementById("p1-hp").textContent = Math.max(0, p1Hp);
-      document.getElementById("p2-hp").textContent = Math.max(0, p2Hp);
-      
-      // Switch Turns
+      monster.classList.add("heart-hit-effect");
+      setTimeout(() => monster.classList.remove("heart-hit-effect"), 450);
+    }, 380);
+
+    setTimeout(() => {
+      arrow.remove();
+
+      if (totalLoveMeter >= 100) {
+        finishBattle("BULLY CHANGED INTO A FRIEND!");
+        return;
+      }
+
       activePlayer = activePlayer === 1 ? 2 : 1;
-      userInput.placeholder = `P${activePlayer}'s turn to speak...`;
+      currentPromptIdx = (currentPromptIdx + 1) % SCENARIOS.length;
+      updatePromptUI();
+
+      const nextName = activePlayer === 1 ? p1Name : p2Name;
+      userInput.placeholder = `${nextName}'s turn to speak...`;
       micBtn.className = `btn btn-p${activePlayer}`;
-      appendMsg(0, `🔄 Turn switched! P${activePlayer}, it's your turn to speak!`);
-    }, 550);
+      sendBtn.className = `btn btn-p${activePlayer}`;
+      appendMsg(0, `🔄 Turn switched! ${nextName}, respond to the next scenario!`);
+      motionStatus.textContent = "AI CAM READY";
+      motionStatus.style.color = "#ec4899";
+    }, 600);
   }
 
-  // Simple Camera Motion Detection (Wave Detection)
-  let prevFrame = null;
-  async function initWebcam() {
+  function initMediaPipeHands() {
+    hands = new Hands({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.6
+    });
+
+    hands.onResults(onHandResults);
+
+    const camera = new Camera(video, {
+      onFrame: async () => {
+        if (canShoot) {
+          await hands.send({ image: video });
+        }
+      },
+      width: 160,
+      height: 120
+    });
+    camera.start();
+  }
+
+  function onHandResults(results) {
+    if (!canShoot || !results.multiHandLandmarks || results.multiHandLandmarks.length === 0) return;
+
+    const landmarks = results.multiHandLandmarks[0];
+    const isThumbsUp = landmarks[4].y < landmarks[3].y && landmarks[3].y < landmarks[2].y && landmarks[8].y > landmarks[5].y;
+    const isPointUp = landmarks[8].y < landmarks[6].y && landmarks[12].y > landmarks[10].y;
+
+    if (isThumbsUp || isPointUp) {
+      shootArrowOfLove();
+    }
+  }
+
+  async function finishBattle(reason) {
+    clearInterval(gameTimerInterval);
+    document.getElementById("control-panel").style.display = "none";
+
+    let winner = "Both Players";
+    if (p1Score > p2Score) winner = p1Name;
+    else if (p2Score > p1Score) winner = p2Name;
+
+    appendMsg(0, `🎉 MISSION COMPLETE (${reason})! BEST FRIENDS TRANSFORMER: ${winner.toUpperCase()}!`);
+
+    const payloadP1 = { name: p1Name, className: className, seatNum: "P1", score: p1Score };
+    const payloadP2 = { name: p2Name, className: className, seatNum: "P2", score: p2Score };
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      video.srcObject = stream;
+      await fetch(LEADERBOARD_URL, {
+        method: "POST", mode: "no-cors",
+        headers: { "Content-Type": "text/plain" }, body: JSON.stringify(payloadP1)
+      });
+      await fetch(LEADERBOARD_URL, {
+        method: "POST", mode: "no-cors",
+        headers: { "Content-Type": "text/plain" }, body: JSON.stringify(payloadP2)
+      });
+      appendMsg(0, `📊 Session finished! Love points saved to Google Sheet Leaderboard.`);
     } catch(e) {}
   }
 
-  function enableHandDetection() {
-    const canvas = document.getElementById("gesture-overlay");
-    const ctx = canvas.getContext("2d");
-    canvas.width = 110; canvas.height = 80;
-
-    let checkInterval = setInterval(() => {
-      if (!canShoot) { clearInterval(checkInterval); return; }
-
-      ctx.drawImage(video, 0, 0, 110, 80);
-      const currentFrame = ctx.getImageData(0, 0, 110, 80);
-
-      if (prevFrame) {
-        let diff = 0;
-        for (let i = 0; i < currentFrame.data.length; i += 16) {
-          diff += Math.abs(currentFrame.data[i] - prevFrame.data[i]);
-        }
-        // Motion Threshold Trigger
-        if (diff > 180000) {
-          shootBullet();
-          clearInterval(checkInterval);
-        }
-      }
-      prevFrame = currentFrame;
-    }, 150);
-  }
-
-  initWebcam();
-  appendMsg(0, "⚔️ Battle Started! Player 1, speak your sentence first!");
+  userInput.addEventListener("keydown", (e) => { if (e.key === "Enter") submitSpeech(); });
 </script>
 </body>
 </html>

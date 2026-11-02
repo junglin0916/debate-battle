@@ -23,28 +23,38 @@
     .p2-color { color: #f43f5e; }
     .timer-badge { color: #f59e0b; font-size: 22px; font-weight: bold; }
 
-    /* Topic Prompt Banner */
+    /* Topic Prompt & Bilingual Banner */
     #prompt-banner {
       background: #1e293b; border: 2px solid #ec4899; border-radius: 10px; padding: 12px 18px;
       text-align: center; font-size: 18px; color: #f8fafc; font-weight: 600; line-height: 1.4;
       box-shadow: 0 4px 15px rgba(236,72,153,0.3);
     }
-    #prompt-hint { font-size: 15px; color: #f59e0b; margin-top: 4px; font-weight: normal; }
+    #prompt-zh { font-size: 16px; color: #38bdf8; margin-top: 4px; font-weight: 500; }
+    #prompt-hint { font-size: 14px; color: #f59e0b; margin-top: 4px; font-weight: normal; }
+
+    /* Visual Options Box */
+    #options-container {
+      display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 8px;
+    }
+    .option-chip {
+      background: #0f172a; border: 1px dashed #ec4899; color: #cbd5e1; padding: 6px 12px;
+      border-radius: 20px; font-size: 13px; font-weight: 600;
+    }
 
     /* Stage Area */
     #battle-stage {
-      position: relative; width: 100%; height: 260px; background: #070913; border: 2px solid #2e3b5e;
+      position: relative; width: 100%; height: 250px; background: #070913; border: 2px solid #2e3b5e;
       border-radius: 12px; overflow: hidden; display: flex; justify-content: space-between; align-items: center; padding: 0 40px;
     }
-    .fighter { width: 85px; height: 85px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 38px; z-index: 2; }
+    .fighter { width: 80px; height: 80px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 36px; z-index: 2; }
     #player1-sprite { background: #0284c7; box-shadow: 0 0 20px #38bdf8; }
     #player2-sprite { background: #be123c; box-shadow: 0 0 20px #f43f5e; }
     
     #monster-container {
-      position: absolute; left: calc(50% - 65px); top: 30px; display: flex; flex-direction: column; align-items: center; z-index: 1;
+      position: absolute; left: calc(50% - 65px); top: 25px; display: flex; flex-direction: column; align-items: center; z-index: 1;
     }
     #monster-sprite {
-      width: 130px; height: 130px; object-fit: contain; filter: drop-shadow(0 0 15px #ec4899);
+      width: 120px; height: 120px; object-fit: contain; filter: drop-shadow(0 0 15px #ec4899);
       transition: transform 0.2s, filter 0.2s;
     }
     #heart-gauge-bar {
@@ -59,14 +69,14 @@
     @keyframes pulse-heart { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
 
     .arrow-of-love {
-      position: absolute; font-size: 28px; top: 175px; transition: left 0.45s cubic-bezier(0.25, 1, 0.5, 1); z-index: 3;
+      position: absolute; font-size: 28px; top: 165px; transition: left 0.45s cubic-bezier(0.25, 1, 0.5, 1); z-index: 3;
     }
 
     #chat-box {
-      height: 190px; background: #151c2e; border: 2px solid #2e3b5e; border-radius: 12px;
+      height: 180px; background: #151c2e; border: 2px solid #2e3b5e; border-radius: 12px;
       padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
     }
-    .msg { padding: 10px 14px; border-radius: 8px; font-size: 17px; max-width: 85%; line-height: 1.4; }
+    .msg { padding: 10px 14px; border-radius: 8px; font-size: 16px; max-width: 85%; line-height: 1.4; }
     .p1-msg { background: #0369a1; color: #fff; align-self: flex-start; }
     .p2-msg { background: #9f1239; color: #fff; align-self: flex-end; }
     .tutor-msg { background: #1e293b; color: #38bdf8; border: 1px solid #38bdf8; align-self: center; font-weight: bold; text-align: center; width: 92%; }
@@ -75,29 +85,39 @@
       background: #151c2e; border: 2px solid #2e3b5e; border-radius: 12px; padding: 12px;
       display: flex; gap: 10px; align-items: center;
     }
-    #user-input { flex: 1; padding: 12px 16px; font-size: 18px; border-radius: 8px; border: 2px solid #475569; background: #0c0f1d; color: #fff; outline: none; }
+    #user-input { flex: 1; padding: 12px 16px; font-size: 17px; border-radius: 8px; border: 2px solid #475569; background: #0c0f1d; color: #fff; outline: none; }
     #user-input:focus { border-color: #ec4899; }
     
-    .btn { padding: 12px 18px; font-size: 17px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s; }
+    .btn { padding: 12px 18px; font-size: 16px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s; }
     .btn-p1 { background: #0284c7; color: #fff; }
     .btn-p2 { background: #be123c; color: #fff; }
     
-    #cam-container { position: relative; width: 120px; height: 85px; border-radius: 6px; overflow: hidden; border: 2px solid #ec4899; background: #000; }
-    #webcam { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    #cam-container { position: relative; width: 110px; height: 80px; border-radius: 6px; overflow: hidden; border: 2px solid #ec4899; background: #000; }
+    webcam { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
     #gesture-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: scaleX(-1); }
     #motion-status {
       position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.8);
       color: #ec4899; font-size: 10px; text-align: center; font-weight: bold; padding: 2px 0;
     }
 
+    /* Modal Overlay & Leaderboard Table */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(12, 15, 29, 0.95);
       display: flex; justify-content: center; align-items: center; z-index: 100;
     }
-    .form-box { background: #151c2e; border: 2px solid #ec4899; border-radius: 12px; padding: 28px; text-align: center; width: 90%; max-width: 500px; }
-    .form-box h2 { color: #ec4899; font-size: 26px; margin-bottom: 14px; }
-    .form-group { display: flex; flex-direction: column; gap: 10px; margin: 16px 0; }
-    .input-field { padding: 12px; font-size: 16px; border: 1px solid #475569; background: #0c0f1d; color: #fff; border-radius: 8px; text-align: center; }
+    .form-box { background: #151c2e; border: 2px solid #ec4899; border-radius: 12px; padding: 24px; text-align: center; width: 90%; max-width: 550px; }
+    .form-box h2 { color: #ec4899; font-size: 24px; margin-bottom: 10px; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; margin: 14px 0; }
+    .input-field { padding: 10px; font-size: 15px; border: 1px solid #475569; background: #0c0f1d; color: #fff; border-radius: 8px; text-align: center; }
+    
+    /* Leaderboard Table Styles */
+    #leaderboard-box {
+      width: 100%; margin: 12px 0; background: #0c0f1d; border: 1px solid #2e3b5e; border-radius: 8px; max-height: 200px; overflow-y: auto;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: center; }
+    th { background: #1e293b; color: #ec4899; padding: 8px; border-bottom: 1px solid #2e3b5e; position: sticky; top: 0; }
+    td { padding: 8px; border-bottom: 1px solid #1e293b; color: #e2e8f0; }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -106,7 +126,7 @@
 <div id="registration-modal" class="modal-overlay">
   <div class="form-box">
     <h2>💖 CHANGE THE BULLY WITH LOVE!</h2>
-    <p>Welcome! Enter your names to start your Socratic English Debate (1.5 Min):</p>
+    <p style="font-size:14px; color:#94a3b8;">Enter player names to start the 1.5-minute Socratic Debate:</p>
     <div class="form-group">
       <input type="text" id="p1-input-name" class="input-field" placeholder="Player 1 Name" required>
       <input type="text" id="p2-input-name" class="input-field" placeholder="Player 2 Name" required>
@@ -124,8 +144,10 @@
   </div>
 
   <div id="prompt-banner">
-    <div id="prompt-text">Loading tutor scene...</div>
-    <div id="prompt-hint">Hint: Use friendly Unit 3 English!</div>
+    <div id="prompt-text">Loading scene...</div>
+    <div id="prompt-zh">載入中...</div>
+    <div id="options-container"></div>
+    <div id="prompt-hint">💡 Hint: Choose your response carefully!</div>
   </div>
 
   <div id="battle-stage">
@@ -145,7 +167,7 @@
       <canvas id="gesture-canvas"></canvas>
       <div id="motion-status">AI CAM READY</div>
     </div>
-    <input type="text" id="user-input" placeholder="Press 🎤 to speak your answer..." autocomplete="off">
+    <input type="text" id="user-input" placeholder="Press 🎤 to speak your choice..." autocomplete="off">
     <button id="mic-btn" class="btn btn-p1" onclick="toggleMic()">🎤 SPEAK</button>
     <button id="send-btn" class="btn btn-p1" onclick="submitSpeech()">SEND</button>
   </div>
@@ -154,30 +176,50 @@
 <script>
   const LEADERBOARD_URL = "https://script.google.com/macros/s/AKfycbwnG3Mc1jpxrASeMr9FRjBS0a9r8bKOmMDPdzLFsn4UszeuMzAkJDu6yBHd68O4d6MAxw/exec";
 
+  // Inappropriate content detector (toxic / aggressive words)
+  const INAPPROPRIATE_WORDS = ["shut up", "stupid", "idiot", "die", "ugly", "hate", "fight", "kill", "dumb", "fool", "loser", "hate you"];
+
+  // Multi-option Anti-Bullying Scenarios with Chinese translations and tiered scoring
   const SCENARIOS = [
     {
-      prompt: "📢 Scene 1: The bully cuts in front of lunch line! Ask them politely not to do that.",
-      keywords: ["don't", "dont", "cut", "line", "please", "wait"],
-      hint: "Say: 'Please don't cut in line!' or 'Please wait in line.'",
-      spokenIntro: "Scenario one. The bully cuts in line! How can you ask them politely not to cut in line?"
+      prompt: "📢 Scenario 1: The bully cuts in front of lunch line!",
+      promptZh: "情境一：霸凌者在午餐排隊時插隊！你該怎麼辦？",
+      spokenIntro: "Scenario one. The bully cuts in line! Choose your response.",
+      options: [
+        { text: "Please don't cut in line.", points: 30, desc: "Super Polite (+30)" },
+        { text: "Please wait in line.", points: 25, desc: "Polite (+25)" },
+        { text: "Don't cut in line!", points: 20, desc: "Direct (+20)" }
+      ]
     },
     {
-      prompt: "📢 Scene 2: The bully looks lonely during lunchtime. Invite them friendly to eat together!",
-      keywords: ["let's", "lets", "eat", "lunch", "together", "bento"],
-      hint: "Say: 'Let's eat lunch together!' or 'Let's be friends!'",
-      spokenIntro: "Scenario two. The bully looks lonely. Suggest eating lunch together using Let's eat!"
+      prompt: "📢 Scenario 2: The bully looks lonely during lunchtime.",
+      promptZh: "情境二：霸凌者在午餐時間看起來很孤單。",
+      spokenIntro: "Scenario two. The bully looks lonely. Invite them!",
+      options: [
+        { text: "Let's eat lunch together!", points: 30, desc: "Friendly (+30)" },
+        { text: "Let's be friends!", points: 25, desc: "Warm (+25)" },
+        { text: "Let's eat bento!", points: 20, desc: "Basic (+20)" }
+      ]
     },
     {
-      prompt: "📢 Scene 3: The bully drops trash in the hallway. Tell them kindly to pick it up.",
-      keywords: ["please", "pick", "trash", "clean", "don't", "dont", "litter"],
-      hint: "Say: 'Please pick up the trash!' or 'Don't litter, please!'",
-      spokenIntro: "Scenario three. The bully litters in the hallway. Ask them kindly to pick up the trash!"
+      prompt: "📢 Scenario 3: The bully drops trash in the hallway.",
+      promptZh: "情境三：霸凌者在走廊亂丟垃圾。",
+      spokenIntro: "Scenario three. The bully litters in the hallway.",
+      options: [
+        { text: "Please pick up the trash.", points: 30, desc: "Very Polite (+30)" },
+        { text: "Don't litter, please.", points: 25, desc: "Polite Warning (+25)" },
+        { text: "Clean it up, please.", points: 20, desc: "Direct (+20)" }
+      ]
     },
     {
-      prompt: "📢 Scene 4: The bully is pushing classmates in PE class. Give them a caring warning!",
-      keywords: ["don't", "dont", "push", "careful", "be careful", "stop"],
-      hint: "Say: 'Don't push!' or 'Be careful, please!'",
-      spokenIntro: "Scenario four. The bully is pushing others in P E class. Give them a polite warning!"
+      prompt: "📢 Scenario 4: The bully pushes classmates in PE class.",
+      promptZh: "情境四：霸凌者在體育課時推同學。",
+      spokenIntro: "Scenario four. The bully pushes classmates in PE class.",
+      options: [
+        { text: "Be careful, please!", points: 30, desc: "Caring Warning (+30)" },
+        { text: "Please don't push!", points: 25, desc: "Polite Stop (+25)" },
+        { text: "Don't push others!", points: 20, desc: "Direct Stop (+20)" }
+      ]
     }
   ];
 
@@ -186,6 +228,7 @@
   let p1Score = 0, p2Score = 0;
   let totalLoveMeter = 0;
   let currentPromptIdx = 0;
+  let currentAwardPoints = 0;
   let canShoot = false;
   let recognition = null;
   let isMicActive = false;
@@ -201,7 +244,6 @@
   const video = document.getElementById("webcam");
   const motionStatus = document.getElementById("motion-status");
 
-  // Voice Synthesis (Tutor Voice)
   function speakTutor(text) {
     if (!('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
@@ -211,13 +253,11 @@
     window.speechSynthesis.speak(u);
   }
 
-  // Web Speech API with Auto-Restart
   if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
     recognition.lang = 'en-US';
     recognition.continuous = false;
-    recognition.interimResults = false;
 
     recognition.onstart = () => {
       isMicActive = true;
@@ -226,8 +266,7 @@
     };
 
     recognition.onresult = (e) => {
-      const transcript = e.results[0][0].transcript;
-      userInput.value = transcript;
+      userInput.value = e.results[0][0].transcript;
       submitSpeech();
     };
 
@@ -247,7 +286,18 @@
   function updatePromptUI() {
     const scenario = SCENARIOS[currentPromptIdx];
     document.getElementById("prompt-text").textContent = scenario.prompt;
-    document.getElementById("prompt-hint").textContent = "💡 " + scenario.hint;
+    document.getElementById("prompt-zh").textContent = scenario.promptZh;
+    
+    // Render option chips
+    const optsBox = document.getElementById("options-container");
+    optsBox.innerHTML = "";
+    scenario.options.forEach(opt => {
+      const chip = document.createElement("span");
+      chip.className = "option-chip";
+      chip.textContent = `💬 "${opt.text}" (${opt.desc})`;
+      optsBox.appendChild(chip);
+    });
+
     speakTutor(scenario.spokenIntro);
   }
 
@@ -260,7 +310,7 @@
     document.getElementById("p2-name-display").textContent = p2Name;
     document.getElementById("registration-modal").classList.add("hidden");
 
-    appendTutorMsg(`👋 Welcome ${p1Name} and ${p2Name}! Let's practice English and change the bully with love!`);
+    appendTutorMsg(`👋 Welcome ${p1Name} and ${p2Name}! Speak polite English to change the bully!`);
     
     setTimeout(() => {
       updatePromptUI();
@@ -304,22 +354,46 @@
     if (!text || timeLeft <= 0) return;
 
     const currentName = activePlayer === 1 ? p1Name : p2Name;
+    const lower = text.toLowerCase();
+
+    // 1. Content Moderation Check (Reject toxic / rude language)
+    const isToxic = INAPPROPRIATE_WORDS.some(badWord => lower.includes(badWord));
+    if (isToxic) {
+      appendMsg(activePlayer, `${currentName}: "${text}"`);
+      userInput.value = "";
+      appendTutorMsg(`🚫 Answer Rejected! Please do not use rude or harmful words. Try a polite response!`);
+      speakTutor("Answer rejected. Please use polite language.");
+      return;
+    }
+
+    // 2. Evaluate against acceptable scenario options
+    const scenario = SCENARIOS[currentPromptIdx];
+    let matchedOption = null;
+
+    for (let opt of scenario.options) {
+      const optLower = opt.text.toLowerCase();
+      // Match if input includes core words of option or close match
+      const keyWords = optLower.replace(/[^\w\s]/gi, '').split(' ');
+      const matchCount = keyWords.filter(w => w.length > 2 && lower.includes(w)).length;
+      if (matchCount >= 2 || lower.includes(optLower)) {
+        matchedOption = opt;
+        break;
+      }
+    }
+
     appendMsg(activePlayer, `${currentName}: "${text}"`);
     userInput.value = "";
 
-    const lower = text.toLowerCase();
-    const scenario = SCENARIOS[currentPromptIdx];
-    const isCorrect = scenario.keywords.some(kw => lower.includes(kw));
-
-    if (isCorrect || lower.length >= 7) {
-      appendTutorMsg(`🌟 Socratic Tutor: Wonderful English, ${currentName}! Show a THUMBS UP (👍) to shoot the Arrow of Love!`);
-      speakTutor(`Wonderful English, ${currentName}! Show a thumbs up to shoot!`);
+    if (matchedOption) {
+      currentAwardPoints = matchedOption.points;
+      appendTutorMsg(`🌟 Great choice! (${matchedOption.desc}). Show a THUMBS UP (👍) to fire the Arrow of Love!`);
+      speakTutor(`Great choice! Show a thumbs up to fire!`);
       canShoot = true;
       motionStatus.textContent = "SHOW 👍 THUMBS UP";
       motionStatus.style.color = "#ec4899";
     } else {
-      appendTutorMsg(`💡 Tutor Hint: Close! ${scenario.hint}`);
-      speakTutor(`Try using friendly English! ${scenario.hint}`);
+      appendTutorMsg(`💡 Tutor: Try saying one of the polite options shown above!`);
+      speakTutor("Please try saying one of the polite options.");
     }
   }
 
@@ -336,16 +410,16 @@
     const monster = document.getElementById("monster-sprite");
 
     if (activePlayer === 1) {
-      arrow.style.left = "130px";
+      arrow.style.left = "120px";
       stage.appendChild(arrow);
       setTimeout(() => { arrow.style.left = "calc(50% - 20px)"; }, 40);
-      p1Score += 25;
+      p1Score += currentAwardPoints;
       document.getElementById("p1-score").textContent = p1Score;
     } else {
-      arrow.style.left = "calc(100% - 150px)";
+      arrow.style.left = "calc(100% - 140px)";
       stage.appendChild(arrow);
       setTimeout(() => { arrow.style.left = "calc(50% - 20px)"; }, 40);
-      p2Score += 25;
+      p2Score += currentAwardPoints;
       document.getElementById("p2-score").textContent = p2Score;
     }
 
@@ -416,6 +490,38 @@
     }
   }
 
+  // Local Leaderboard Recording & Display
+  function saveAndRenderLeaderboard() {
+    let scores = JSON.parse(localStorage.getItem("debate_scores") || "[]");
+    scores.push({ name: p1Name, className: className, score: p1Score, time: new Date().toLocaleTimeString() });
+    scores.push({ name: p2Name, className: className, score: p2Score, time: new Date().toLocaleTimeString() });
+    
+    // Sort highest to lowest
+    scores.sort((a, b) => b.score - a.score);
+    localStorage.setItem("debate_scores", JSON.stringify(scores));
+
+    // Render Table
+    let rowsHtml = scores.slice(0, 8).map((s, idx) => `
+      <tr>
+        <td>#${idx + 1}</td>
+        <td>${s.name}</td>
+        <td>${s.className}</td>
+        <td>⭐ ${s.score}</td>
+      </tr>
+    `).join("");
+
+    return `
+      <div id="leaderboard-box">
+        <table>
+          <thead>
+            <tr><th>Rank</th><th>Name</th><th>Class</th><th>Love Points</th></tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
   async function finishBattle(reason) {
     clearInterval(gameTimerInterval);
     document.getElementById("control-panel").style.display = "none";
@@ -424,9 +530,13 @@
     if (p1Score > p2Score) winner = p1Name;
     else if (p2Score > p1Score) winner = p2Name;
 
-    appendTutorMsg(`🎉 MISSION COMPLETE! The bully is now your friend! Winner: ${winner.toUpperCase()}!`);
-    speakTutor("Mission complete! The bully is now your friend! Excellent work!");
+    appendTutorMsg(`🎉 MISSION COMPLETE! ${winner.toUpperCase()} won the debate!`);
+    speakTutor("Mission complete! The bully is now your friend!");
 
+    // Save locally and build table
+    const tableHtml = saveAndRenderLeaderboard();
+
+    // Transmit to Google Apps Script Endpoint
     const payloadP1 = { name: p1Name, className: className, seatNum: "P1", score: p1Score };
     const payloadP2 = { name: p2Name, className: className, seatNum: "P2", score: p2Score };
 
@@ -439,8 +549,23 @@
         method: "POST", mode: "no-cors",
         headers: { "Content-Type": "text/plain" }, body: JSON.stringify(payloadP2)
       });
-      appendTutorMsg(`📊 Session scores saved to Google Sheet Leaderboard!`);
     } catch(e) {}
+
+    // Display end-of-game overlay with Leaderboard Table
+    const modal = document.createElement("div");
+    modal.className = "modal-overlay";
+    modal.innerHTML = `
+      <div class="form-box">
+        <h2>🏆 GAME OVER!</h2>
+        <p style="color:#ec4899; font-size:18px; font-weight:bold;">${reason}</p>
+        <p>Winner: <b>${winner}</b></p>
+        <br>
+        <h3 style="color:#38bdf8;">📊 Leaderboard</h3>
+        ${tableHtml}
+        <button class="btn btn-p1" style="width:100%; margin-top:10px;" onclick="window.location.reload()">PLAY AGAIN</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
   }
 
   userInput.addEventListener("keydown", (e) => { if (e.key === "Enter") submitSpeech(); });

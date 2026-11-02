@@ -10,34 +10,46 @@
 
     #app-container { width: 100%; max-width: 950px; display: flex; flex-direction: column; gap: 10px; }
 
-    /* Top Arena Stats */
+    /* Top Arena Header */
     #arena-header {
       background: #151c2e; border: 2px solid #2e3b5e; border-radius: 12px; padding: 12px 20px;
       display: flex; justify-content: space-between; align-items: center; font-size: 20px; font-weight: bold;
     }
     .p1-color { color: #38bdf8; }
     .p2-color { color: #f43f5e; }
-    .vs-badge { color: #f59e0b; font-size: 24px; }
+    .vs-badge { color: #f59e0b; font-size: 22px; }
 
-    /* Battle Visual Canvas Area */
+    /* Battle Visual Stage */
     #battle-stage {
-      position: relative; width: 100%; height: 260px; background: #070913; border: 2px solid #2e3b5e;
+      position: relative; width: 100%; height: 280px; background: #070913; border: 2px solid #2e3b5e;
       border-radius: 12px; overflow: hidden; display: flex; justify-content: space-between; align-items: center; padding: 0 40px;
     }
-    .fighter { width: 100px; height: 100px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 40px; transition: 0.3s; }
+    .fighter { width: 90px; height: 90px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 40px; z-index: 2; }
     #player1-sprite { background: #0284c7; box-shadow: 0 0 20px #38bdf8; }
     #player2-sprite { background: #be123c; box-shadow: 0 0 20px #f43f5e; }
     
-    /* Custom Monster Image */
+    /* Custom GIF Monster Integration */
     #monster-sprite {
-      width: 120px; height: 120px; object-fit: contain; position: absolute; left: calc(50% - 60px); top: 30px;
-      filter: drop-shadow(0 0 15px #f59e0b); display: none;
+      width: 140px; height: 140px; object-fit: contain; position: absolute; left: calc(50% - 70px); top: 50px;
+      filter: drop-shadow(0 0 15px #f59e0b); z-index: 1; transition: transform 0.2s, filter 0.2s;
+    }
+
+    /* Monster Hit Shake Effect */
+    .hit-effect {
+      animation: shake 0.3s ease-in-out;
+      filter: brightness(2) drop-shadow(0 0 25px #ef4444) !important;
+    }
+    @keyframes shake {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(-10px, 0); }
+      75% { transform: translate(10px, 0); }
+      100% { transform: translate(0, 0); }
     }
 
     /* Bullet Animation */
     .bullet {
-      position: absolute; width: 24px; height: 10px; border-radius: 5px; background: #f59e0b;
-      box-shadow: 0 0 12px #f59e0b; top: 180px; transition: left 0.5s linear;
+      position: absolute; width: 30px; height: 10px; border-radius: 5px; background: #f59e0b;
+      box-shadow: 0 0 14px #f59e0b; top: 190px; transition: left 0.4s linear; z-index: 3;
     }
 
     /* Dialogue Log */
@@ -45,46 +57,72 @@
       height: 200px; background: #151c2e; border: 2px solid #2e3b5e; border-radius: 12px;
       padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
     }
-    .msg { padding: 12px 16px; border-radius: 8px; font-size: 18px; max-width: 80%; line-height: 1.4; }
+    .msg { padding: 12px 16px; border-radius: 8px; font-size: 18px; max-width: 82%; line-height: 1.4; }
     .p1-msg { background: #0369a1; color: #fff; align-self: flex-start; }
     .p2-msg { background: #9f1239; color: #fff; align-self: flex-end; }
-    .sys-msg { background: #1e293b; color: #f59e0b; align-self: center; font-weight: bold; text-align: center; }
+    .sys-msg { background: #1e293b; color: #f59e0b; align-self: center; font-weight: bold; text-align: center; width: 90%; }
 
     /* Control Panel & Gesture Monitor */
     #control-panel {
       background: #151c2e; border: 2px solid #2e3b5e; border-radius: 12px; padding: 14px;
       display: flex; gap: 12px; align-items: center;
     }
-    #user-input { flex: 1; padding: 12px 16px; font-size: 18px; border-radius: 8px; border: 2px solid #475569; background: #0c0f1d; color: #fff; }
+    #user-input { flex: 1; padding: 12px 16px; font-size: 18px; border-radius: 8px; border: 2px solid #475569; background: #0c0f1d; color: #fff; outline: none; }
+    #user-input:focus { border-color: #38bdf8; }
+    
     .btn { padding: 12px 20px; font-size: 18px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s; }
     .btn-p1 { background: #0284c7; color: #fff; }
     .btn-p2 { background: #be123c; color: #fff; }
     
-    /* Camera Canvas for Hand Wave Detection */
-    #cam-container { position: relative; width: 110px; height: 80px; border-radius: 6px; overflow: hidden; border: 2px solid #38bdf8; }
+    #cam-container { position: relative; width: 110px; height: 80px; border-radius: 6px; overflow: hidden; border: 2px solid #38bdf8; background: #000; }
     #webcam { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
     #gesture-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+
+    /* Student Registration Screen */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(12, 15, 29, 0.95);
+      display: flex; justify-content: center; align-items: center; z-index: 100;
+    }
+    .form-box { background: #151c2e; border: 2px solid #38bdf8; border-radius: 12px; padding: 28px; text-align: center; width: 90%; max-width: 500px; }
+    .form-box h2 { color: #38bdf8; font-size: 26px; margin-bottom: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 10px; margin: 16px 0; }
+    .input-field { padding: 12px; font-size: 16px; border: 1px solid #475569; background: #0c0f1d; color: #fff; border-radius: 8px; text-align: center; }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
+<!-- Registration Overlay -->
+<div id="registration-modal" class="modal-overlay">
+  <div class="form-box">
+    <h2>⚔️ 2-PLAYER DEBATE BATTLE</h2>
+    <p>Enter player details to start the session:</p>
+    <div class="form-group">
+      <input type="text" id="p1-input-name" class="input-field" placeholder="Player 1 Name (e.g. Alex)" required>
+      <input type="text" id="p2-input-name" class="input-field" placeholder="Player 2 Name (e.g. Ben)" required>
+      <input type="text" id="class-input" class="input-field" placeholder="Class (e.g. 701)">
+    </div>
+    <button class="btn btn-p1" style="width: 100%;" onclick="startBattleSession()">START BATTLE</button>
+  </div>
+</div>
+
 <div id="app-container">
   <!-- Arena Header -->
   <div id="arena-header">
-    <div class="p1-color">P1: <span id="p1-name">Player 1</span> (HP: <span id="p1-hp">100</span>)</div>
-    <div class="vs-badge">⚔️ DUET DEBATE ⚔️</div>
-    <div class="p2-color">P2: <span id="p2-name">Player 2</span> (HP: <span id="p2-hp">100</span>)</div>
+    <div class="p1-color"><span id="p1-name-display">P1</span> (HP: <span id="p1-hp">100</span>)</div>
+    <div class="vs-badge">⚔️ DEBATE DUET ⚔️</div>
+    <div class="p2-color"><span id="p2-name-display">P2</span> (HP: <span id="p2-hp">100</span>)</div>
   </div>
 
   <!-- Stage View -->
   <div id="battle-stage">
     <div id="player1-sprite" class="fighter">🧙‍♂️</div>
-    <!-- Custom Monster Image Integration -->
-    <img id="monster-sprite" src="https://api.iconify.design/emojione-v1:dragon.svg" alt="Monster">
+    <!-- Direct link to your hosted GitHub GIF monster -->
+    <img id="monster-sprite" src="https://raw.githubusercontent.com/junglin0916/debate-battle/main/bully_monster_idle.gif" alt="Bully Monster">
     <div id="player2-sprite" class="fighter">🥷</div>
   </div>
 
-  <!-- Chat / Speech History -->
+  <!-- Speech History Log -->
   <div id="chat-box"></div>
 
   <!-- Input Controls -->
@@ -93,39 +131,59 @@
       <video id="webcam" autoplay playsinline muted></video>
       <canvas id="gesture-overlay"></canvas>
     </div>
-    <input type="text" id="user-input" placeholder="P1's turn to speak English..." autocomplete="off">
+    <input type="text" id="user-input" placeholder="Player 1's turn to speak English..." autocomplete="off">
     <button id="mic-btn" class="btn btn-p1" onclick="toggleMic()">🎤 SPEAK</button>
-    <button class="btn btn-p1" onclick="submitSpeech()">SEND</button>
+    <button id="send-btn" class="btn btn-p1" onclick="submitSpeech()">SEND</button>
   </div>
 </div>
 
 <script>
-  // Leaderboard Setup URL
+  // Your Google Apps Script Web App Endpoint
   const LEADERBOARD_URL = "https://script.google.com/macros/s/AKfycbwnG3Mc1jpxrASeMr9FRjBS0a9r8bKOmMDPdzLFsn4UszeuMzAkJDu6yBHd68O4d6MAxw/exec";
 
-  let activePlayer = 1; // 1 or 2
+  let p1Name = "Player 1", p2Name = "Player 2", className = "-";
+  let activePlayer = 1;
   let p1Hp = 100, p2Hp = 100;
+  let p1Score = 0, p2Score = 0;
   let canShoot = false;
   let recognition = null;
+  let prevFrame = null;
 
   const chatBox = document.getElementById("chat-box");
   const userInput = document.getElementById("user-input");
   const micBtn = document.getElementById("mic-btn");
+  const sendBtn = document.getElementById("send-btn");
   const video = document.getElementById("webcam");
 
-  // Web Speech Setup
+  // Web Speech API Initialization
   if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
     recognition.lang = 'en-US';
+
+    recognition.onstart = () => { micBtn.textContent = "🎙️ LISTENING..."; };
     recognition.onresult = (e) => {
       userInput.value = e.results[0][0].transcript;
       submitSpeech();
     };
+    recognition.onerror = recognition.onend = () => { micBtn.textContent = "🎤 SPEAK"; };
   }
 
   function toggleMic() {
     if (recognition) recognition.start();
+  }
+
+  function startBattleSession() {
+    p1Name = document.getElementById("p1-input-name").value.trim() || "Player 1";
+    p2Name = document.getElementById("p2-input-name").value.trim() || "Player 2";
+    className = document.getElementById("class-input").value.trim() || "-";
+
+    document.getElementById("p1-name-display").textContent = p1Name;
+    document.getElementById("p2-name-display").textContent = p2Name;
+    document.getElementById("registration-modal").classList.add("hidden");
+
+    initWebcam();
+    appendMsg(0, `⚔️ Battle Started! ${p1Name}, speak your sentence first!`);
   }
 
   function appendMsg(sender, text) {
@@ -140,16 +198,18 @@
     const text = userInput.value.trim();
     if (!text) return;
 
-    appendMsg(activePlayer, `P${activePlayer}: "${text}"`);
+    const currentName = activePlayer === 1 ? p1Name : p2Name;
+    appendMsg(activePlayer, `${currentName}: "${text}"`);
     userInput.value = "";
 
-    // Simple sentence validation for beginner Grade 7 Unit 3 English
-    if (text.length > 3) {
-      appendMsg(0, `🎯 Great Sentence! WAVE YOUR HAND AT THE CAMERA TO SHOOT! 👋`);
+    // Socratic Sentence Check
+    if (text.length >= 4) {
+      if (activePlayer === 1) p1Score += 25; else p2Score += 25;
+      appendMsg(0, `🎯 Valid Sentence! 👋 WAVE YOUR HAND ACROSS THE CAMERA TO SHOOT!`);
       canShoot = true;
       enableHandDetection();
     } else {
-      appendMsg(0, `⚠️ Too short! Say a complete sentence!`);
+      appendMsg(0, `⚠️ Too short! Try a complete sentence like 'Please give me water' or 'Let's eat bento'!`);
     }
   }
 
@@ -160,39 +220,52 @@
     const bullet = document.createElement("div");
     bullet.className = "bullet";
     const stage = document.getElementById("battle-stage");
-    
+    const monster = document.getElementById("monster-sprite");
+
     if (activePlayer === 1) {
-      bullet.style.left = "140px";
+      bullet.style.left = "130px";
       stage.appendChild(bullet);
-      setTimeout(() => { bullet.style.left = "calc(100% - 160px)"; }, 50);
-      p2Hp -= 20;
+      setTimeout(() => { bullet.style.left = "calc(100% - 150px)"; }, 40);
+      p2Hp -= 25;
     } else {
-      bullet.style.left = "calc(100% - 160px)";
+      bullet.style.left = "calc(100% - 150px)";
       stage.appendChild(bullet);
-      setTimeout(() => { bullet.style.left = "140px"; }, 50);
-      p1Hp -= 20;
+      setTimeout(() => { bullet.style.left = "130px"; }, 40);
+      p1Hp -= 25;
     }
+
+    // Trigger hit animation on GIF monster
+    setTimeout(() => {
+      monster.classList.add("hit-effect");
+      setTimeout(() => monster.classList.remove("hit-effect"), 300);
+    }, 200);
 
     setTimeout(() => {
       bullet.remove();
       document.getElementById("p1-hp").textContent = Math.max(0, p1Hp);
       document.getElementById("p2-hp").textContent = Math.max(0, p2Hp);
-      
-      // Switch Turns
+
+      if (p1Hp <= 0 || p2Hp <= 0) {
+        finishBattle();
+        return;
+      }
+
+      // Switch Turn
       activePlayer = activePlayer === 1 ? 2 : 1;
-      userInput.placeholder = `P${activePlayer}'s turn to speak...`;
+      const nextName = activePlayer === 1 ? p1Name : p2Name;
+      userInput.placeholder = `${nextName}'s turn to speak...`;
       micBtn.className = `btn btn-p${activePlayer}`;
-      appendMsg(0, `🔄 Turn switched! P${activePlayer}, it's your turn to speak!`);
-    }, 550);
+      sendBtn.className = `btn btn-p${activePlayer}`;
+      appendMsg(0, `🔄 Turn switched! ${nextName}, it is your turn to speak!`);
+    }, 500);
   }
 
-  // Simple Camera Motion Detection (Wave Detection)
-  let prevFrame = null;
+  // Camera Motion Detection
   async function initWebcam() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       video.srcObject = stream;
-    } catch(e) {}
+    } catch(e) { console.log("Camera access disabled."); }
   }
 
   function enableHandDetection() {
@@ -211,18 +284,37 @@
         for (let i = 0; i < currentFrame.data.length; i += 16) {
           diff += Math.abs(currentFrame.data[i] - prevFrame.data[i]);
         }
-        // Motion Threshold Trigger
         if (diff > 180000) {
           shootBullet();
           clearInterval(checkInterval);
         }
       }
       prevFrame = currentFrame;
-    }, 150);
+    }, 120);
   }
 
-  initWebcam();
-  appendMsg(0, "⚔️ Battle Started! Player 1, speak your sentence first!");
+  async function finishBattle() {
+    const winner = p1Hp > p2Hp ? p1Name : p2Name;
+    appendMsg(0, `🏆 GAME OVER! ${winner} WINS THE BATTLE!`);
+
+    // Submit data to your Google Apps Script URL
+    const payloadP1 = { name: p1Name, className: className, seatNum: "P1", score: p1Score };
+    const payloadP2 = { name: p2Name, className: className, seatNum: "P2", score: p2Score };
+
+    try {
+      await fetch(LEADERBOARD_URL, {
+        method: "POST", mode: "no-cors",
+        headers: { "Content-Type": "text/plain" }, body: JSON.stringify(payloadP1)
+      });
+      await fetch(LEADERBOARD_URL, {
+        method: "POST", mode: "no-cors",
+        headers: { "Content-Type": "text/plain" }, body: JSON.stringify(payloadP2)
+      });
+      appendMsg(0, `📊 Both player scores have been submitted to your Google Sheet Leaderboard!`);
+    } catch(e) { console.log("Leaderboard submit error", e); }
+  }
+
+  userInput.addEventListener("keydown", (e) => { if (e.key === "Enter") submitSpeech(); });
 </script>
 </body>
 </html>

@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2-Player English Debate & Gesture Battle</title>
+  <title>2-Player English Debate & AI Gesture Battle</title>
+  
+  <!-- MediaPipe Hands & Camera Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background: #0c0f1d; color: #e2e8f0; min-height: 100vh; padding: 12px; display: flex; flex-direction: column; align-items: center; }
@@ -61,7 +66,7 @@
     .p2-msg { background: #9f1239; color: #fff; align-self: flex-end; }
     .sys-msg { background: #1e293b; color: #f59e0b; align-self: center; font-weight: bold; text-align: center; width: 90%; }
 
-    /* Control Panel & Motion Monitor */
+    /* Control Panel & Gesture Monitor */
     #control-panel {
       background: #151c2e; border: 2px solid #2e3b5e; border-radius: 12px; padding: 14px;
       display: flex; gap: 12px; align-items: center;
@@ -73,10 +78,11 @@
     .btn-p1 { background: #0284c7; color: #fff; }
     .btn-p2 { background: #be123c; color: #fff; }
     
-    #cam-container { position: relative; width: 120px; height: 85px; border-radius: 6px; overflow: hidden; border: 2px solid #38bdf8; background: #000; }
+    #cam-container { position: relative; width: 130px; height: 90px; border-radius: 6px; overflow: hidden; border: 2px solid #38bdf8; background: #000; }
     #webcam { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    #gesture-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: scaleX(-1); }
     #motion-status {
-      position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.7);
+      position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.8);
       color: #38bdf8; font-size: 10px; text-align: center; font-weight: bold; padding: 2px 0;
     }
 
@@ -125,8 +131,8 @@
   <div id="control-panel">
     <div id="cam-container">
       <video id="webcam" autoplay playsinline muted></video>
-      <canvas id="gesture-overlay" style="display:none;"></canvas>
-      <div id="motion-status">CAM READY</div>
+      <canvas id="gesture-canvas"></canvas>
+      <div id="motion-status">AI CAM READY</div>
     </div>
     <input type="text" id="user-input" placeholder="Player 1's turn to speak English..." autocomplete="off">
     <button id="mic-btn" class="btn btn-p1" onclick="toggleMic()">🎤 SPEAK</button>
@@ -143,7 +149,7 @@
   let p1Score = 0, p2Score = 0;
   let canShoot = false;
   let recognition = null;
-  let prevFrame = null;
+  let hands = null;
 
   const chatBox = document.getElementById("chat-box");
   const userInput = document.getElementById("user-input");
@@ -152,6 +158,7 @@
   const video = document.getElementById("webcam");
   const motionStatus = document.getElementById("motion-status");
 
+  // Web Speech Setup
   if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
@@ -178,7 +185,7 @@
     document.getElementById("p2-name-display").textContent = p2Name;
     document.getElementById("registration-modal").classList.add("hidden");
 
-    initWebcam();
+    initMediaPipeHands();
     appendMsg(0, `⚔️ Battle Started! ${p1Name}, speak your sentence first!`);
   }
 
@@ -198,14 +205,12 @@
     appendMsg(activePlayer, `${currentName}: "${text}"`);
     userInput.value = "";
 
-    // Lowered minimum character length to 2 so any sentence triggers shooting
     if (text.length >= 2) {
       if (activePlayer === 1) p1Score += 25; else p2Score += 25;
-      appendMsg(0, `🎯 Valid Sentence! 👋 WAVE YOUR HAND AT THE CAMERA TO SHOOT!`);
+      appendMsg(0, `🎯 Valid Sentence! 👍 SHOW A THUMBS UP OR POINT UP TO THE CAMERA TO SHOOT!`);
       canShoot = true;
-      motionStatus.textContent = "WAVE HAND NOW!";
+      motionStatus.textContent = "SHOW 👍 THUMBS UP";
       motionStatus.style.color = "#f59e0b";
-      enableHandDetection();
     } else {
       appendMsg(0, `⚠️ Say a complete sentence!`);
     }
@@ -214,7 +219,7 @@
   function shootBullet() {
     if (!canShoot) return;
     canShoot = false;
-    motionStatus.textContent = "SHOT FIRED!";
+    motionStatus.textContent = "👍 SHOT FIRED!";
     motionStatus.style.color = "#22c55e";
 
     const bullet = document.createElement("div");
@@ -255,44 +260,50 @@
       micBtn.className = `btn btn-p${activePlayer}`;
       sendBtn.className = `btn btn-p${activePlayer}`;
       appendMsg(0, `🔄 Turn switched! ${nextName}, speak your sentence!`);
-      motionStatus.textContent = "CAM READY";
+      motionStatus.textContent = "AI CAM READY";
       motionStatus.style.color = "#38bdf8";
     }, 500);
   }
 
-  async function initWebcam() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      video.srcObject = stream;
-    } catch(e) { 
-      motionStatus.textContent = "CAM BLOCKED"; 
-    }
+  // AI MediaPipe Hand Tracking Setup
+  function initMediaPipeHands() {
+    hands = new Hands({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.6
+    });
+
+    hands.onResults(onHandResults);
+
+    const camera = new Camera(video, {
+      onFrame: async () => {
+        if (canShoot) {
+          await hands.send({ image: video });
+        }
+      },
+      width: 160,
+      height: 120
+    });
+    camera.start();
   }
 
-  function enableHandDetection() {
-    const canvas = document.getElementById("gesture-overlay");
-    const ctx = canvas.getContext("2d");
-    canvas.width = 80; canvas.height = 60;
+  function onHandResults(results) {
+    if (!canShoot || !results.multiHandLandmarks || results.multiHandLandmarks.length === 0) return;
 
-    let checkInterval = setInterval(() => {
-      if (!canShoot) { clearInterval(checkInterval); return; }
+    const landmarks = results.multiHandLandmarks[0];
 
-      ctx.drawImage(video, 0, 0, 80, 60);
-      const currentFrame = ctx.getImageData(0, 0, 80, 60);
+    // Landmark 4: Thumb Tip, Landmark 3: Thumb IP, Landmark 8: Index Tip, Landmark 5: Index MCP
+    const isThumbsUp = landmarks[4].y < landmarks[3].y && landmarks[3].y < landmarks[2].y && landmarks[8].y > landmarks[5].y;
+    const isPointUp = landmarks[8].y < landmarks[6].y && landmarks[12].y > landmarks[10].y;
 
-      if (prevFrame) {
-        let diff = 0;
-        for (let i = 0; i < currentFrame.data.length; i += 16) {
-          diff += Math.abs(currentFrame.data[i] - prevFrame.data[i]);
-        }
-        // Lowered motion detection threshold from 180000 to 60000 for high sensitivity
-        if (diff > 60000) {
-          shootBullet();
-          clearInterval(checkInterval);
-        }
-      }
-      prevFrame = currentFrame;
-    }, 100);
+    if (isThumbsUp || isPointUp) {
+      shootBullet();
+    }
   }
 
   async function finishBattle() {

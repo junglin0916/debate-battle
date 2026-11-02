@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2-Player English Debate & Gesture Battle</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background: #0c0f1d; color: #e2e8f0; min-height: 100vh; padding: 12px; display: flex; flex-direction: column; align-items: center; }
+
+    #app-container { width: 100%; max-width: 950px; display: flex; flex-direction: column; gap: 10px; }
+
+    /* Top Arena Stats */
+    #arena-header {
+      background: #151c2e; border: 2px solid #2e3b5e; border-radius: 12px; padding: 12px 20px;
+      display: flex; justify-content: space-between; align-items: center; font-size: 20px; font-weight: bold;
+    }
+    .p1-color { color: #38bdf8; }
+    .p2-color { color: #f43f5e; }
+    .vs-badge { color: #f59e0b; font-size: 24px; }
+
+    /* Battle Visual Canvas Area */
+    #battle-stage {
+      position: relative; width: 100%; height: 260px; background: #070913; border: 2px solid #2e3b5e;
+      border-radius: 12px; overflow: hidden; display: flex; justify-content: space-between; align-items: center; padding: 0 40px;
+    }
+    .fighter { width: 100px; height: 100px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 40px; transition: 0.3s; }
+    #player1-sprite { background: #0284c7; box-shadow: 0 0 20px #38bdf8; }
+    #player2-sprite { background: #be123c; box-shadow: 0 0 20px #f43f5e; }
+    
+    /* Custom Monster Image */
+    #monster-sprite {
+      width: 120px; height: 120px; object-fit: contain; position: absolute; left: calc(50% - 60px); top: 30px;
+      filter: drop-shadow(0 0 15px #f59e0b); display: none;
+    }
+
+    /* Bullet Animation */
+    .bullet {
+      position: absolute; width: 24px; height: 10px; border-radius: 5px; background: #f59e0b;
+      box-shadow: 0 0 12px #f59e0b; top: 180px; transition: left 0.5s linear;
+    }
+
+    /* Dialogue Log */
+    #chat-box {
+      height: 200px; background: #151c2e; border: 2px solid #2e3b5e; border-radius: 12px;
+      padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+    }
+    .msg { padding: 12px 16px; border-radius: 8px; font-size: 18px; max-width: 80%; line-height: 1.4; }
+    .p1-msg { background: #0369a1; color: #fff; align-self: flex-start; }
+    .p2-msg { background: #9f1239; color: #fff; align-self: flex-end; }
+    .sys-msg { background: #1e293b; color: #f59e0b; align-self: center; font-weight: bold; text-align: center; }
+
+    /* Control Panel & Gesture Monitor */
+    #control-panel {
+      background: #151c2e; border: 2px solid #2e3b5e; border-radius: 12px; padding: 14px;
+      display: flex; gap: 12px; align-items: center;
+    }
+    #user-input { flex: 1; padding: 12px 16px; font-size: 18px; border-radius: 8px; border: 2px solid #475569; background: #0c0f1d; color: #fff; }
+    .btn { padding: 12px 20px; font-size: 18px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s; }
+    .btn-p1 { background: #0284c7; color: #fff; }
+    .btn-p2 { background: #be123c; color: #fff; }
+    
+    /* Camera Canvas for Hand Wave Detection */
+    #cam-container { position: relative; width: 110px; height: 80px; border-radius: 6px; overflow: hidden; border: 2px solid #38bdf8; }
+    #webcam { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    #gesture-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+  </style>
+</head>
+<body>
+
+<div id="app-container">
+  <!-- Arena Header -->
+  <div id="arena-header">
+    <div class="p1-color">P1: <span id="p1-name">Player 1</span> (HP: <span id="p1-hp">100</span>)</div>
+    <div class="vs-badge">⚔️ DUET DEBATE ⚔️</div>
+    <div class="p2-color">P2: <span id="p2-name">Player 2</span> (HP: <span id="p2-hp">100</span>)</div>
+  </div>
+
+  <!-- Stage View -->
+  <div id="battle-stage">
+    <div id="player1-sprite" class="fighter">🧙‍♂️</div>
+    <!-- Custom Monster Image Integration -->
+    <img id="monster-sprite" src="https://api.iconify.design/emojione-v1:dragon.svg" alt="Monster">
+    <div id="player2-sprite" class="fighter">🥷</div>
+  </div>
+
+  <!-- Chat / Speech History -->
+  <div id="chat-box"></div>
+
+  <!-- Input Controls -->
+  <div id="control-panel">
+    <div id="cam-container">
+      <video id="webcam" autoplay playsinline muted></video>
+      <canvas id="gesture-overlay"></canvas>
+    </div>
+    <input type="text" id="user-input" placeholder="P1's turn to speak English..." autocomplete="off">
+    <button id="mic-btn" class="btn btn-p1" onclick="toggleMic()">🎤 SPEAK</button>
+    <button class="btn btn-p1" onclick="submitSpeech()">SEND</button>
+  </div>
+</div>
+
+<script>
+  // Leaderboard Setup URL
+  const LEADERBOARD_URL = "https://script.google.com/macros/s/AKfycbwnG3Mc1jpxrASeMr9FRjBS0a9r8bKOmMDPdzLFsn4UszeuMzAkJDu6yBHd68O4d6MAxw/exec";
+
+  let activePlayer = 1; // 1 or 2
+  let p1Hp = 100, p2Hp = 100;
+  let canShoot = false;
+  let recognition = null;
+
+  const chatBox = document.getElementById("chat-box");
+  const userInput = document.getElementById("user-input");
+  const micBtn = document.getElementById("mic-btn");
+  const video = document.getElementById("webcam");
+
+  // Web Speech Setup
+  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.onresult = (e) => {
+      userInput.value = e.results[0][0].transcript;
+      submitSpeech();
+    };
+  }
+
+  function toggleMic() {
+    if (recognition) recognition.start();
+  }
+
+  function appendMsg(sender, text) {
+    const div = document.createElement("div");
+    div.className = "msg " + (sender === 1 ? "p1-msg" : sender === 2 ? "p2-msg" : "sys-msg");
+    div.textContent = text;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  function submitSpeech() {
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    appendMsg(activePlayer, `P${activePlayer}: "${text}"`);
+    userInput.value = "";
+
+    // Simple sentence validation for beginner Grade 7 Unit 3 English
+    if (text.length > 3) {
+      appendMsg(0, `🎯 Great Sentence! WAVE YOUR HAND AT THE CAMERA TO SHOOT! 👋`);
+      canShoot = true;
+      enableHandDetection();
+    } else {
+      appendMsg(0, `⚠️ Too short! Say a complete sentence!`);
+    }
+  }
+
+  function shootBullet() {
+    if (!canShoot) return;
+    canShoot = false;
+
+    const bullet = document.createElement("div");
+    bullet.className = "bullet";
+    const stage = document.getElementById("battle-stage");
+    
+    if (activePlayer === 1) {
+      bullet.style.left = "140px";
+      stage.appendChild(bullet);
+      setTimeout(() => { bullet.style.left = "calc(100% - 160px)"; }, 50);
+      p2Hp -= 20;
+    } else {
+      bullet.style.left = "calc(100% - 160px)";
+      stage.appendChild(bullet);
+      setTimeout(() => { bullet.style.left = "140px"; }, 50);
+      p1Hp -= 20;
+    }
+
+    setTimeout(() => {
+      bullet.remove();
+      document.getElementById("p1-hp").textContent = Math.max(0, p1Hp);
+      document.getElementById("p2-hp").textContent = Math.max(0, p2Hp);
+      
+      // Switch Turns
+      activePlayer = activePlayer === 1 ? 2 : 1;
+      userInput.placeholder = `P${activePlayer}'s turn to speak...`;
+      micBtn.className = `btn btn-p${activePlayer}`;
+      appendMsg(0, `🔄 Turn switched! P${activePlayer}, it's your turn to speak!`);
+    }, 550);
+  }
+
+  // Simple Camera Motion Detection (Wave Detection)
+  let prevFrame = null;
+  async function initWebcam() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      video.srcObject = stream;
+    } catch(e) {}
+  }
+
+  function enableHandDetection() {
+    const canvas = document.getElementById("gesture-overlay");
+    const ctx = canvas.getContext("2d");
+    canvas.width = 110; canvas.height = 80;
+
+    let checkInterval = setInterval(() => {
+      if (!canShoot) { clearInterval(checkInterval); return; }
+
+      ctx.drawImage(video, 0, 0, 110, 80);
+      const currentFrame = ctx.getImageData(0, 0, 110, 80);
+
+      if (prevFrame) {
+        let diff = 0;
+        for (let i = 0; i < currentFrame.data.length; i += 16) {
+          diff += Math.abs(currentFrame.data[i] - prevFrame.data[i]);
+        }
+        // Motion Threshold Trigger
+        if (diff > 180000) {
+          shootBullet();
+          clearInterval(checkInterval);
+        }
+      }
+      prevFrame = currentFrame;
+    }, 150);
+  }
+
+  initWebcam();
+  appendMsg(0, "⚔️ Battle Started! Player 1, speak your sentence first!");
+</script>
+</body>
+</html>

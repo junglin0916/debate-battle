@@ -41,20 +41,20 @@
       border-radius: 20px; font-size: 13px; font-weight: 600;
     }
 
-    /* Stage Area - Height Expanded to 350px for Larger Character */
+    /* Stage Area - Adjusted for Full Character Visibility */
     #battle-stage {
-      position: relative; width: 100%; height: 350px; background: #070913; border: 2px solid #2e3b5e;
+      position: relative; width: 100%; height: 320px; background: #070913; border: 2px solid #2e3b5e;
       border-radius: 12px; overflow: hidden; display: flex; justify-content: space-between; align-items: center; padding: 0 40px;
     }
     .fighter { width: 80px; height: 80px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 36px; z-index: 2; }
     #player1-sprite { background: #0284c7; box-shadow: 0 0 20px #38bdf8; }
     #player2-sprite { background: #be123c; box-shadow: 0 0 20px #f43f5e; }
     
-    /* Bully Stage Container & Large Anime Spritesheet Frame (220px x 280px) */
+    /* Bully Stage Container & Perfect Square Anime Frame (220px x 220px) */
     #monster-container {
       position: absolute; 
       left: calc(50% - 110px); 
-      top: 10px; 
+      top: 15px; 
       display: flex; 
       flex-direction: column; 
       align-items: center; 
@@ -62,25 +62,25 @@
     }
     #monster-sprite {
       width: 220px; 
-      height: 280px; 
+      height: 220px; 
       border-radius: 14px;
-      border: 2px solid #ec4899;
-      background-image: url('https://raw.githubusercontent.com/junglin0916/debate-battle/main/bully_anime.jpg');
+      border: 3px solid #ec4899;
+      background-image: url('bully_anime.jpg');
       background-repeat: no-repeat;
-      background-size: 440px 840px; /* 2x Frame Width (440px), 3x Frame Height (840px) */
+      background-size: 440px 660px; /* 2x Frame Width (440px), 3x Frame Height (660px) */
       box-shadow: 0 0 25px rgba(236, 72, 153, 0.5);
       animation: animeCycle 6s steps(1) infinite;
       transition: transform 0.2s, filter 0.2s;
     }
 
-    /* Updated Keyframes for 220px x 280px Grid Frames */
+    /* Corrected Keyframes for 220px x 220px Square Frames */
     @keyframes animeCycle {
       0%    { background-position: 0px 0px; }        /* Frame 1: Top Left */
       16.6% { background-position: -220px 0px; }     /* Frame 2: Top Right */
-      33.3% { background-position: 0px -280px; }     /* Frame 3: Mid Left */
-      50%   { background-position: -220px -280px; }  /* Frame 4: Mid Right */
-      66.6% { background-position: 0px -560px; }     /* Frame 5: Bottom Left */
-      83.3% { background-position: -220px -560px; }  /* Frame 6: Bottom Right */
+      33.3% { background-position: 0px -220px; }     /* Frame 3: Mid Left */
+      50%   { background-position: -220px -220px; }  /* Frame 4: Mid Right */
+      66.6% { background-position: 0px -440px; }     /* Frame 5: Bottom Left */
+      83.3% { background-position: -220px -440px; }  /* Frame 6: Bottom Right */
     }
 
     #heart-gauge-bar {
@@ -95,7 +95,7 @@
     @keyframes pulse-heart { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
     .arrow-of-love {
-      position: absolute; font-size: 28px; top: 220px; transition: left 0.45s cubic-bezier(0.25, 1, 0.5, 1); z-index: 3;
+      position: absolute; font-size: 28px; top: 190px; transition: left 0.45s cubic-bezier(0.25, 1, 0.5, 1); z-index: 3;
     }
 
     #chat-box {
